@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { INITIAL_AGENTS, COLORS } from './constants';
-import { Agent, Session, ChatMessage } from './types';
+import { Agent, Session, ChatMessage, UploadedFile } from './types';
 import { generateAgentResponse, mapInputToFields, commitToMemory } from './services/geminiService';
 import { SmartRenderer } from './components/SmartRenderer';
 import { Dashboard } from './components/Dashboard';
@@ -21,6 +21,10 @@ function App() {
   const [showSettings, setShowSettings] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [showCreateModal, setShowCreateModal] = useState(false);
+  
+  // Global File State
+  const [globalFiles, setGlobalFiles] = useState<UploadedFile[]>([]);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const activeAgent = agents.find(a => a.id === selectedAgentId) || agents[0];
 
@@ -32,7 +36,7 @@ function App() {
     }
   }, []);
 
-  // Save agents to local storage when changed (e.g. memory update)
+  // Save agents to local storage when changed
   useEffect(() => {
     localStorage.setItem('pump_agents', JSON.stringify(agents));
   }, [agents]);
@@ -40,6 +44,42 @@ function App() {
   const handleInputChange = (id: string, value: string) => {
     setInputs(prev => ({ ...prev, [id]: value }));
   };
+
+  // --- File Handling ---
+  const handleGlobalFileUpload = (files: UploadedFile[]) => {
+      setGlobalFiles(prev => [...prev, ...files]);
+  };
+
+  const onFileInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+      if (e.target.files) {
+          const newFiles: UploadedFile[] = [];
+          const fileList = Array.from(e.target.files);
+          let processedCount = 0;
+
+          fileList.forEach((file: File) => {
+              const reader = new FileReader();
+              reader.onload = (event) => {
+                  if (event.target?.result) {
+                      newFiles.push({ 
+                          name: file.name, 
+                          content: event.target!.result as string,
+                          type: file.type || 'text/plain'
+                      });
+                      processedCount++;
+                      if (processedCount === fileList.length) {
+                          handleGlobalFileUpload(newFiles);
+                      }
+                  }
+              };
+              reader.readAsText(file);
+          });
+      }
+  };
+
+  const removeFile = (idxToRemove: number) => {
+      setGlobalFiles(prev => prev.filter((_, idx) => idx !== idxToRemove));
+  };
+  // ---------------------
 
   const handleAutoMap = async () => {
     const rawText = inputs['paste_dump'] || ''; 
@@ -54,7 +94,8 @@ function App() {
 
   const handleGenerate = async () => {
     setLoading(true);
-    const response = await generateAgentResponse(activeAgent, inputs);
+    // Pass globalFiles to generation service
+    const response = await generateAgentResponse(activeAgent, inputs, globalFiles);
     
     const newMsg: ChatMessage = {
       role: 'model',
@@ -76,13 +117,22 @@ function App() {
     if (!session || !refinementInput) return;
     setLoading(true);
     
-    // In a real chat, we'd append to history. simplified here.
-    const newInputs = { ...inputs, refinement_instruction: refinementInput, previous_output: session.messages[session.messages.length - 1].content };
-    const response = await generateAgentResponse(activeAgent, newInputs);
+    // Pass globalFiles again to generation service so context is maintained
+    const newInputs = { 
+        ...inputs, 
+        refinement_instruction: refinementInput, 
+        previous_output: session.messages[session.messages.length - 1].content 
+    };
+    
+    const response = await generateAgentResponse(activeAgent, newInputs, globalFiles);
     
     setSession(prev => ({
       ...prev!,
-      messages: [...prev!.messages, { role: 'user', content: refinementInput, timestamp: Date.now() }, { role: 'model', content: response, timestamp: Date.now() }]
+      messages: [
+          ...prev!.messages, 
+          { role: 'user', content: refinementInput, timestamp: Date.now() }, 
+          { role: 'model', content: response, timestamp: Date.now() }
+      ]
     }));
     setRefinementInput('');
     setLoading(false);
@@ -118,6 +168,15 @@ function App() {
   return (
     <div className="flex h-screen w-full bg-[#0A0A0B] text-[#E5E5E5] overflow-hidden font-sans selection:bg-[#00FF66] selection:text-black">
       
+      {/* Hidden File Input for the Chat Interface */}
+      <input 
+        type="file" 
+        multiple 
+        ref={fileInputRef} 
+        className="hidden" 
+        onChange={onFileInputChange} 
+      />
+
       <CreateAgentModal 
         isOpen={showCreateModal} 
         onClose={() => setShowCreateModal(false)} 
@@ -190,7 +249,12 @@ function App() {
         {currentView === 'dashboard' && <Dashboard />}
 
         {/* VIEW: DATA */}
-        {currentView === 'data' && <DataLayer />}
+        {currentView === 'data' && (
+            <DataLayer 
+                files={globalFiles} 
+                onFileUpload={handleGlobalFileUpload} 
+            />
+        )}
 
         {/* VIEW: GENERATOR (Core) */}
         {currentView === 'generator' && (
@@ -324,22 +388,29 @@ function App() {
                         )}
                     </div>
 
-                    {/* New "Option 2" Style Refinement Bar */}
+                    {/* Chat Input & Context Bar */}
                     <div className="absolute bottom-0 left-0 right-4">
                          <div className="bg-[#18181B] border border-white/5 rounded-3xl p-3 shadow-2xl flex flex-col gap-3 backdrop-blur-xl">
-                            {/* Context Pills (Visual only for now, mimicking 'Option 2') */}
-                            {session && (
+                            
+                            {/* DYNAMIC Context Pills */}
+                            {globalFiles.length > 0 && (
                                 <div className="flex items-center gap-2 px-2 overflow-x-auto no-scrollbar">
-                                    <div className="flex items-center gap-2 bg-[#27272A] px-3 py-1.5 rounded-full border border-white/5 text-xs text-gray-300 whitespace-nowrap">
-                                        <IconFileText className="w-3 h-3 text-[#BD00FF]" />
-                                        <span>previous-context.pdf</span>
-                                        <button className="hover:text-white ml-1">×</button>
-                                    </div>
-                                    <div className="flex items-center gap-2 bg-[#27272A] px-3 py-1.5 rounded-full border border-white/5 text-xs text-gray-300 whitespace-nowrap">
-                                        <IconBarChart className="w-3 h-3 text-[#00FF66]" />
-                                        <span>analytics-data.csv</span>
-                                        <button className="hover:text-white ml-1">×</button>
-                                    </div>
+                                    {globalFiles.map((file, idx) => (
+                                        <div key={idx} className="flex items-center gap-2 bg-[#27272A] px-3 py-1.5 rounded-full border border-white/5 text-xs text-gray-300 whitespace-nowrap group">
+                                            {file.name.endsWith('.csv') ? (
+                                                <IconBarChart className="w-3 h-3 text-[#00FF66]" />
+                                            ) : (
+                                                <IconFileText className="w-3 h-3 text-[#BD00FF]" />
+                                            )}
+                                            <span>{file.name}</span>
+                                            <button 
+                                                onClick={() => removeFile(idx)}
+                                                className="hover:text-white ml-1 opacity-50 group-hover:opacity-100 transition-opacity"
+                                            >
+                                                ×
+                                            </button>
+                                        </div>
+                                    ))}
                                 </div>
                             )}
 
@@ -355,7 +426,11 @@ function App() {
                                 />
                                 
                                 <div className="flex items-center gap-1 border-l border-white/5 pl-3">
-                                    <button className="p-2 text-gray-400 hover:text-white hover:bg-white/5 rounded-lg transition-colors" title="Upload Reference">
+                                    <button 
+                                        className="p-2 text-gray-400 hover:text-white hover:bg-white/5 rounded-lg transition-colors" 
+                                        title="Upload Reference"
+                                        onClick={() => fileInputRef.current?.click()}
+                                    >
                                         <IconPaperclip className="w-4 h-4" />
                                     </button>
                                     <button 

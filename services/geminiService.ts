@@ -1,5 +1,5 @@
 import { GoogleGenAI, GenerateContentResponse } from "@google/genai";
-import { Agent } from '../types';
+import { Agent, UploadedFile } from '../types';
 
 const getClient = () => {
   const apiKey = process.env.API_KEY;
@@ -13,15 +13,23 @@ const getClient = () => {
 export const generateAgentResponse = async (
   agent: Agent,
   inputValues: Record<string, string>,
-  history: string[] = []
+  files: UploadedFile[] = []
 ): Promise<string> => {
   const ai = getClient();
-  const modelId = 'gemini-3-flash-preview'; // Updated model
+  const modelId = 'gemini-3-flash-preview';
 
-  // Construct the prompt
+  // Construct the prompt with Inputs
   let userPrompt = `Input Data:\n`;
   for (const [key, value] of Object.entries(inputValues)) {
     userPrompt += `${key}: ${value}\n`;
+  }
+
+  // Append File Context
+  if (files.length > 0) {
+    userPrompt += `\n\nAttached Context Files:\n`;
+    files.forEach(file => {
+      userPrompt += `--- START FILE: ${file.name} ---\n${file.content}\n--- END FILE ---\n`;
+    });
   }
 
   const memoryContext = agent.memoryLog.length > 0 
@@ -61,7 +69,7 @@ export const mapInputToFields = async (rawText: string, fields: {id: string, lab
 
     try {
         const response = await ai.models.generateContent({
-            model: 'gemini-3-flash-preview', // Updated model
+            model: 'gemini-3-flash-preview',
             contents: prompt,
             config: { responseMimeType: 'application/json' }
         });
@@ -72,21 +80,23 @@ export const mapInputToFields = async (rawText: string, fields: {id: string, lab
     }
 }
 
-export const analyzeDataFiles = async (fileData: string[]) : Promise<string> => {
+export const analyzeDataFiles = async (files: UploadedFile[]) : Promise<string> => {
     const ai = getClient();
-    // In a real app, we would truncate tokens, here we assume small CSV/text samples
+    
+    const fileContext = files.map(f => `Filename: ${f.name}\nContent:\n${f.content.substring(0, 10000)}...`).join('\n---\n');
+
     const prompt = `
     Analyze the following datasets (CSV or Text format). 
     Identify correlations, outliers, and key trends.
     Produce a "Strategic Directive" report in Markdown format.
     
     Datasets:
-    ${fileData.join('\n---\n')}
+    ${fileContext}
     `;
 
     try {
         const response = await ai.models.generateContent({
-            model: 'gemini-3-flash-preview', // Updated model
+            model: 'gemini-3-flash-preview',
             contents: prompt
         });
         return response.text || "Analysis failed.";
@@ -110,7 +120,7 @@ export const commitToMemory = async (currentMemory: string[], interaction: strin
 
     try {
         const response = await ai.models.generateContent({
-            model: 'gemini-3-flash-preview', // Updated model
+            model: 'gemini-3-flash-preview',
             contents: prompt
         });
         return response.text?.trim() || feedback;

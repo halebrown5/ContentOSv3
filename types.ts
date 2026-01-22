@@ -21,6 +21,12 @@ export interface Agent {
   category: 'Strategy' | 'Creation' | 'Analysis' | 'Utility';
 }
 
+export interface UploadedFile {
+  name: string;
+  content: string;
+  type: string;
+}
+
 export interface ChatMessage {
   role: 'user' | 'model';
   content: string;

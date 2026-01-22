@@ -1,19 +1,36 @@
 import React, { useState } from 'react';
 import { IconUpload, IconFileText, IconCpu } from './Icons';
 import { analyzeDataFiles } from '../services/geminiService';
+import { UploadedFile } from '../types';
 
-export const DataLayer = () => {
-    const [files, setFiles] = useState<{name: string, content: string}[]>([]);
+interface DataLayerProps {
+    files: UploadedFile[];
+    onFileUpload: (files: UploadedFile[]) => void;
+}
+
+export const DataLayer: React.FC<DataLayerProps> = ({ files, onFileUpload }) => {
     const [analysis, setAnalysis] = useState<string | null>(null);
     const [loading, setLoading] = useState(false);
 
     const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files) {
-            Array.from(e.target.files).forEach((file: File) => {
+            const newFiles: UploadedFile[] = [];
+            const fileList = Array.from(e.target.files);
+            let processedCount = 0;
+
+            fileList.forEach((file: File) => {
                 const reader = new FileReader();
                 reader.onload = (event) => {
                     if (event.target?.result) {
-                        setFiles(prev => [...prev, { name: file.name, content: event.target!.result as string }]);
+                        newFiles.push({ 
+                            name: file.name, 
+                            content: event.target!.result as string,
+                            type: file.type || 'text/plain'
+                        });
+                        processedCount++;
+                        if (processedCount === fileList.length) {
+                            onFileUpload(newFiles);
+                        }
                     }
                 };
                 reader.readAsText(file);
@@ -24,8 +41,7 @@ export const DataLayer = () => {
     const runAnalysis = async () => {
         if (files.length === 0) return;
         setLoading(true);
-        const fileContents = files.map(f => `Filename: ${f.name}\nContent Preview: ${f.content.substring(0, 1000)}...`);
-        const result = await analyzeDataFiles(fileContents);
+        const result = await analyzeDataFiles(files);
         setAnalysis(result);
         setLoading(false);
     };
@@ -47,6 +63,7 @@ export const DataLayer = () => {
                     </div>
 
                     <div className="space-y-2">
+                        {files.length === 0 && <p className="text-xs text-gray-500 italic">No files uploaded yet.</p>}
                         {files.map((f, i) => (
                             <div key={i} className="flex items-center gap-2 bg-white/5 p-2 rounded-lg text-sm text-gray-300">
                                 <IconFileText className="w-4 h-4 text-[#00FF66]" />
