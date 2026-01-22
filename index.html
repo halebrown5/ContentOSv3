@@ -5,42 +5,56 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Pump Content OS</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,400;0,600;0,800;1,800&family=Inter:wght@400;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <style>
       body {
         font-family: 'Inter', sans-serif;
-        background-color: #0A0A0B;
-        color: #e5e5e5;
+        background-color: #000000;
+        color: #FFFFFF;
+      }
+      .font-condensed {
+        font-family: 'Barlow Condensed', sans-serif;
       }
       .font-mono {
         font-family: 'JetBrains Mono', monospace;
       }
-      /* Custom Scrollbar */
+      /* Custom Scrollbar - Blocky */
       ::-webkit-scrollbar {
-        width: 6px;
-        height: 6px;
+        width: 8px;
+        height: 8px;
       }
       ::-webkit-scrollbar-track {
-        background: #18181B;
+        background: #121212;
       }
       ::-webkit-scrollbar-thumb {
-        background: #27272A;
-        border-radius: 3px;
+        background: #333333;
+        border: 1px solid #000000;
       }
       ::-webkit-scrollbar-thumb:hover {
         background: #00FF66;
       }
-      .neon-glow {
-        box-shadow: 0 0 10px rgba(0, 255, 102, 0.4);
+      
+      /* PUMP AESTHETIC UTILITIES */
+      .pump-shadow {
+        box-shadow: 6px 6px 0px 0px #00FF66;
       }
-      .purple-glow {
-        box-shadow: 0 0 15px rgba(189, 0, 255, 0.3);
+      .pump-shadow-sm {
+        box-shadow: 3px 3px 0px 0px #00FF66;
+      }
+      .pump-shadow-white {
+        box-shadow: 6px 6px 0px 0px #FFFFFF;
+      }
+      .pump-shadow-white-sm {
+         box-shadow: 3px 3px 0px 0px #FFFFFF;
+      }
+      .pump-border {
+        border: 2px solid #FFFFFF;
       }
       .glass-panel {
-        background: rgba(24, 24, 27, 0.6);
-        backdrop-filter: blur(12px);
-        border: 1px solid rgba(255, 255, 255, 0.05);
+        /* No glass in Pump Aesthetic - Solid Block */
+        background: #000000;
+        border: 2px solid #333333;
       }
     </style>
   <script type="importmap">

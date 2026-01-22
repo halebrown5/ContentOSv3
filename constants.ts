@@ -1,252 +1,323 @@
 import { Agent } from './types';
 
 export const COLORS = {
-  bg: '#0A0A0B',      // Deep Black
-  surface: '#18181B', // Zinc-900 like
-  primary: '#00FF66', // Neon Green
-  accent: '#BD00FF',  // Purple
-  text: '#E5E5E5',
-  textMuted: '#A1A1AA',
-  border: '#27272A',
+  bg: '#000000',      // Void Black
+  surface: '#121212', // Slightly off-black for contrast
+  primary: '#00FF66', // New Pump Neon
+  accent: '#FFD600',  // Stackable Yellow/Orange for secondary
+  text: '#FFFFFF',
+  textMuted: '#9CA3AF',
+  border: '#333333',
 };
 
 export const INITIAL_AGENTS: Agent[] = [
-  // --- STRATEGY ---
+  // --- CORE STRATEGY & VERIFICATION ---
   {
-    id: 'social-rollout',
-    name: 'Social Rollout Architect',
-    role: 'Strategist',
-    description: 'Converts long-form content (blogs/whitepapers) into a multi-channel distribution plan.',
+    id: 'data-verifier-agent',
+    name: 'Data Layer Verifier',
+    role: 'Editor-in-Chief',
+    description: 'Cross-references drafts against the system Data Layer and Brand DNA.',
+    category: 'Analysis',
+    outputType: 'json',
+    memoryLog: [],
+    systemPrompt: `You are the Editor-in-Chief. Verify the input draft against the provided Context and Brand DNA.
+    Output JSON:
+    {
+      "verified_claims": ["..."],
+      "hallucinations_flagged": ["..."],
+      "refined_draft": "...",
+      "change_log": ["Changed X to Y based on data..."]
+    }`,
+    inputs: [
+      { id: 'draft', label: 'Draft Content', type: 'textarea' }
+    ]
+  },
+  {
+    id: 'analytics-report-agent',
+    name: 'Analytics Analyst',
+    role: 'Data Scientist',
+    description: 'Synthesizes raw numbers into Win/Loss analysis and strategic directives.',
+    category: 'Analysis',
+    outputType: 'text',
+    memoryLog: [],
+    systemPrompt: 'Analyze the provided raw metrics. Output a high-level executive summary: What won, what lost, and what we should do next week.',
+    inputs: [
+      { id: 'metrics', label: 'Raw Metrics (Text/CSV)', type: 'textarea' }
+    ]
+  },
+  {
+    id: 'accuracy-agent',
+    name: 'Accuracy Verifier',
+    role: 'Fact-Checker',
+    description: 'Compares a draft against a specific "Source of Truth" document.',
+    category: 'Analysis',
+    outputType: 'text',
+    memoryLog: [],
+    systemPrompt: 'Compare the Draft against the Source Document. Flag any discrepancies, exaggerations, or missing context.',
+    inputs: [
+      { id: 'draft', label: 'Draft', type: 'textarea' },
+      { id: 'source_doc', label: 'Source of Truth', type: 'textarea' }
+    ]
+  },
+
+  // --- SOCIAL WRITING & ROLLOUT ---
+  {
+    id: 'social-rollout-agent',
+    name: 'Social Rollout',
+    role: 'Campaign Manager',
+    description: 'Converts long-form content into a multi-channel launch package.',
     category: 'Strategy',
     outputType: 'json',
-    memoryLog: ['Prefer punchy, short hooks for X.', 'Always include 3 relevant hashtags for LinkedIn.'],
-    systemPrompt: `You are an expert Social Media Strategist. Your goal is to take a long-form content piece and break it down into a distribution plan.
-    Output must be valid JSON with the following structure:
+    memoryLog: [],
+    systemPrompt: `Create a distribution plan.
+    Output JSON:
     {
       "channels": [
-        { "name": "LinkedIn", "posts": [{ "type": "Carousel|Text", "content": "..." }] },
-        { "name": "X (Twitter)", "posts": [{ "type": "Thread", "content": "..." }] },
+        { "name": "LinkedIn", "posts": [{ "type": "Main", "content": "..." }] },
+        { "name": "X", "posts": [{ "type": "Thread", "content": "..." }] },
         { "name": "Newsletter", "subject": "...", "body": "..." }
       ]
-    }
-    Adhere to the user's memory log for tone and style preferences.`,
+    }`,
     inputs: [
-      { id: 'content', label: 'Source Content', type: 'textarea', placeholder: 'Paste blog post or upload transcript...' },
-      { id: 'goal', label: 'Campaign Goal', type: 'select', options: ['Traffic', 'Engagement', 'Brand Awareness'] }
+      { id: 'content', label: 'Source Content', type: 'textarea' }
     ]
   },
   {
-    id: 'competitor-analyst',
-    name: 'Competitor Intel',
-    role: 'Analyst',
-    description: 'Analyzes competitor text/claims and provides a counter-strategy matrix.',
-    category: 'Strategy',
+    id: 'individual-post-creator',
+    name: 'Post Deep-Dive',
+    role: 'Specialist',
+    description: 'Creates one high-impact, standalone post for a specific platform.',
+    category: 'Creation',
     outputType: 'text',
     memoryLog: [],
-    systemPrompt: 'Analyze the provided competitor content. Identify weaknesses, gaps, and opportunities. Output a strategic directive on how to counter this narrative.',
+    systemPrompt: 'Write a high-impact social media post for the specified platform. Focus on a strong hook and clear value.',
     inputs: [
-      { id: 'competitor_content', label: 'Competitor Content', type: 'textarea', placeholder: 'Paste competitor copy...' }
+      { id: 'platform', label: 'Platform', type: 'select', options: ['LinkedIn', 'X (Twitter)', 'Instagram Caption'] },
+      { id: 'topic', label: 'Topic/Angle', type: 'textarea' }
     ]
   },
   {
-    id: 'persona-simulator',
-    name: 'Audience Simulator',
-    role: 'Strategist',
-    description: 'Simulates a specific audience persona reacting to your draft.',
-    category: 'Strategy',
+    id: 'caption-writing-agent',
+    name: 'Caption Writer',
+    role: 'Copywriter',
+    description: 'Generates professional "operator-to-operator" captions.',
+    category: 'Creation',
     outputType: 'text',
     memoryLog: [],
-    systemPrompt: 'You are acting as the specific target audience defined by the user. Critique the input content brutally but constructively from that perspective.',
+    systemPrompt: 'Write a professional, concise caption. No fluff. Operator-to-operator tone.',
     inputs: [
-      { id: 'persona', label: 'Target Persona', type: 'text', placeholder: 'e.g., CTO of a Series B startup' },
-      { id: 'draft', label: 'Content Draft', type: 'textarea', placeholder: 'Your content here...' }
+      { id: 'context', label: 'Image/Post Context', type: 'textarea' }
+    ]
+  },
+  {
+    id: 'caption-rewriter-agent',
+    name: 'Caption Rewriter',
+    role: 'Editor',
+    description: 'Rewrites a draft into 4 distinct tonal variants.',
+    category: 'Creation',
+    outputType: 'json',
+    memoryLog: [],
+    systemPrompt: `Rewrite the input into 4 tones. Output JSON:
+    {
+      "variants": [
+        { "tone": "Contrarian", "content": "..." },
+        { "tone": "Pragmatist", "content": "..." },
+        { "tone": "Visionary", "content": "..." },
+        { "tone": "Scribe", "content": "..." }
+      ]
+    }`,
+    inputs: [
+      { id: 'draft', label: 'Original Draft', type: 'textarea' }
     ]
   },
 
-  // --- CREATION ---
+  // --- X (TWITTER) STRATEGY ---
   {
-    id: 'thread-architect',
+    id: 'x-thread-agent',
     name: 'X Thread Architect',
-    role: 'Creator',
-    description: 'Turns topics or unstructured notes into viral-style X threads.',
-    category: 'Creation',
-    outputType: 'text',
-    memoryLog: ['Use "🧵" to start.', 'No hashtags in the middle of sentences.'],
-    systemPrompt: 'Convert the input into a high-engagement Twitter/X thread. Hook in the first tweet. Value in the middle. CTA at the end. One idea per tweet.',
-    inputs: [
-      { id: 'topic', label: 'Topic / Notes', type: 'textarea', placeholder: 'What is this thread about?' }
-    ]
-  },
-  {
-    id: 'linkedin-carousel',
-    name: 'LinkedIn Carousel Maker',
-    role: 'Creator',
-    description: 'Generates slide-by-slide copy for PDF carousels.',
+    role: 'Viral Engineer',
+    description: 'Transforms content into viral thread concepts (Contrarian, How-To, Future).',
     category: 'Creation',
     outputType: 'json',
     memoryLog: [],
-    systemPrompt: `Create a LinkedIn Carousel script.
-    Output JSON format:
+    systemPrompt: `Create 4 thread concepts. Output JSON:
     {
-      "slides": [
-        { "slide_number": 1, "headline": "...", "body": "...", "visual_cue": "..." }
+      "concepts": [
+        { "type": "Contrarian", "hook": "...", "outline": "..." },
+        { "type": "How-To", "hook": "...", "outline": "..." },
+        { "type": "Future", "hook": "...", "outline": "..." },
+        { "type": "Deep Dive", "hook": "...", "outline": "..." }
       ]
     }`,
     inputs: [
-      { id: 'topic', label: 'Carousel Topic', type: 'text', placeholder: 'e.g. 5 Ways to Scale AI' },
-      { id: 'points', label: 'Key Points', type: 'textarea', placeholder: 'List the main takeaways...' }
+      { id: 'topic', label: 'Topic', type: 'textarea' }
     ]
   },
   {
-    id: 'video-storyboard',
-    name: 'Video Storyboarder',
-    role: 'Creator',
-    description: 'Generates scene-by-scene scripts for short-form video.',
-    category: 'Creation',
-    outputType: 'json',
-    memoryLog: [],
-    systemPrompt: `Create a video storyboard.
-    Output JSON format:
-    {
-      "scenes": [
-        { "time": "0:00-0:05", "visual": "...", "audio": "..." }
-      ]
-    }`,
-    inputs: [
-      { id: 'concept', label: 'Video Concept', type: 'textarea', placeholder: 'Describe the video idea...' }
-    ]
-  },
-  {
-    id: 'email-sequence',
-    name: 'Email Sequence Builder',
-    role: 'Creator',
-    description: 'Writes a 3-part nurture sequence based on a value proposition.',
+    id: 'x-long-form-agent',
+    name: 'X Long Form',
+    role: 'Essayist',
+    description: 'Converts content into a single, cohesive long-form post for scroll-pause retention.',
     category: 'Creation',
     outputType: 'text',
     memoryLog: [],
-    systemPrompt: 'Write a 3-email sequence (Welcome, Value, Soft Sell). Keep subject lines under 50 chars. Tone: Professional but conversational.',
+    systemPrompt: 'Write a long-form X post (approx 500 words). focus on formatting, line breaks, and a compelling narrative arc.',
     inputs: [
-      { id: 'value_prop', label: 'Value Proposition', type: 'textarea', placeholder: 'What are we offering?' }
-    ]
-  },
-  {
-    id: 'hook-generator',
-    name: 'Viral Hook Generator',
-    role: 'Creator',
-    description: 'Generates 10 variations of a hook for a given piece of content.',
-    category: 'Creation',
-    outputType: 'text',
-    memoryLog: [],
-    systemPrompt: 'Generate 10 viral hooks for the following content. Use psychological triggers like Curiosity, Fear of Missing Out, and Specificity.',
-    inputs: [
-      { id: 'context', label: 'Content Context', type: 'textarea', placeholder: 'Summary of the content...' }
+      { id: 'topic', label: 'Topic/Notes', type: 'textarea' }
     ]
   },
 
-  // --- ANALYSIS ---
+  // --- VISUAL STORYTELLING ---
   {
-    id: 'data-verifier',
-    name: 'Data Verifier',
-    role: 'Auditor',
-    description: 'Cross-checks claims in a text against logic and common knowledge rules.',
-    category: 'Analysis',
-    outputType: 'text',
+    id: 'insights-carousel-agent',
+    name: 'Insights Carousel',
+    role: 'Educator',
+    description: 'Transforms complex insights into a 5-7 slide executive storyboard.',
+    category: 'Creation',
+    outputType: 'json',
     memoryLog: [],
-    systemPrompt: 'Analyze the text for factual claims. Flag any stats that seem exaggerated or lack context. Provide a confidence score for each claim.',
+    systemPrompt: `Create a slide-by-slide storyboard. Output JSON:
+    { "slides": [{ "slide": 1, "headline": "...", "body": "...", "visual_cue": "..." }] }`,
     inputs: [
-      { id: 'text_to_verify', label: 'Text to Verify', type: 'textarea', placeholder: 'Paste text here...' }
+      { id: 'insight', label: 'Core Insight', type: 'textarea' }
     ]
   },
   {
-    id: 'sentiment-analyzer',
-    name: 'Sentiment & Tone Check',
-    role: 'Auditor',
-    description: 'Analyzes the emotional tone of a draft to ensure it matches brand voice.',
-    category: 'Analysis',
+    id: 'case-study-carousel-agent',
+    name: 'Case Study Architect',
+    role: 'Proof Builder',
+    description: 'Turns project outcomes into a narrative storyboard (Problem -> Approach -> Outcome).',
+    category: 'Creation',
     outputType: 'json',
     memoryLog: [],
-    systemPrompt: `Analyze the sentiment. Output JSON:
-    {
-      "overall_sentiment": "Positive|Neutral|Negative",
-      "tone_keywords": ["Professional", "Urgent"],
-      "suggestions": "..."
-    }`,
+    systemPrompt: `Create a Case Study carousel. Output JSON with slides following Problem -> Solution -> Result structure.`,
     inputs: [
-      { id: 'draft', label: 'Draft Text', type: 'textarea', placeholder: 'Paste draft...' }
+      { id: 'case_details', label: 'Project Details', type: 'textarea' }
     ]
   },
   {
-    id: 'seo-optimizer',
-    name: 'SEO Meta Optimizer',
-    role: 'Analyst',
-    description: 'Generates optimized title tags, meta descriptions, and slug ideas.',
-    category: 'Analysis',
+    id: 'video-storyboard-agent',
+    name: 'Video Storyboard',
+    role: 'Director',
+    description: 'Scripts short-form video clips with visual direction.',
+    category: 'Creation',
     outputType: 'json',
     memoryLog: [],
-    systemPrompt: `Generate SEO metadata. Output JSON:
-    {
-      "title_tags": ["...", "..."],
-      "meta_descriptions": ["...", "..."],
-      "keywords_found": ["..."]
-    }`,
+    systemPrompt: `Create a video script. Output JSON:
+    { "scenes": [{ "time": "0-5s", "visual": "...", "audio": "..." }] }`,
     inputs: [
-      { id: 'content', label: 'Page Content', type: 'textarea' },
-      { id: 'keyword', label: 'Target Keyword', type: 'text' }
+      { id: 'concept', label: 'Video Idea', type: 'textarea' }
+    ]
+  },
+  {
+    id: 'poll-generator-agent',
+    name: 'Poll Generator',
+    role: 'Engager',
+    description: 'Creates high-signal LinkedIn polls based on psychological patterns.',
+    category: 'Creation',
+    outputType: 'json',
+    memoryLog: [],
+    systemPrompt: `Generate 3 poll ideas. Output JSON:
+    { "polls": [{ "question": "...", "options": ["...", "..."], "psychology": "Risk Assessment" }] }`,
+    inputs: [
+      { id: 'topic', label: 'Topic', type: 'textarea' }
     ]
   },
 
-  // --- UTILITY ---
+  // --- EXTRACTION & REPURPOSING ---
   {
-    id: 'quote-extractor',
-    name: 'Verbatim Quote Extractor',
-    role: 'Utility',
-    description: 'Extracts powerful verbatim quotes from raw transcripts.',
+    id: 'quote-extractor-verbatim',
+    name: 'Quote Extractor',
+    role: 'Archivist',
+    description: 'Extracts exact, word-for-word quotes from transcripts.',
     category: 'Utility',
     outputType: 'json',
     memoryLog: [],
-    systemPrompt: `Extract the top 5 most impactful quotes. Output JSON:
-    { "quotes": [ { "text": "...", "timestamp": "..." } ] }`,
+    systemPrompt: `Extract the top 5 IMPACTFUL verbatim quotes. Output JSON: { "quotes": ["..."] }`,
     inputs: [
       { id: 'transcript', label: 'Transcript', type: 'textarea' }
     ]
   },
   {
-    id: 'jargon-buster',
-    name: 'Jargon Buster',
-    role: 'Utility',
-    description: 'Rewrites complex corporate speak into clear, simple English.',
-    category: 'Utility',
+    id: 'youtube-substack-agent',
+    name: 'Repurposer Pro',
+    role: 'Signal Hunter',
+    description: 'Scans transcripts to identify viral hooks and repurpose them.',
+    category: 'Strategy',
     outputType: 'text',
     memoryLog: [],
-    systemPrompt: 'Rewrite the following text to be understood by a 5th grader. Remove all corporate jargon.',
+    systemPrompt: 'Find the viral hooks in this transcript. Repurpose the best one into a social post.',
     inputs: [
-      { id: 'text', label: 'Complex Text', type: 'textarea' }
+      { id: 'transcript', label: 'Transcript', type: 'textarea' }
     ]
   },
   {
-    id: 'alt-text',
-    name: 'Alt Text Writer',
-    role: 'Utility',
-    description: 'Generates descriptive alt text for images (Simulated via description input or image upload).',
-    category: 'Utility',
+    id: 'research-signal-agent',
+    name: 'Research Signal',
+    role: 'Distiller',
+    description: 'Turns dense PDF reports into "teaser" posts.',
+    category: 'Strategy',
     outputType: 'text',
     memoryLog: [],
-    systemPrompt: 'Write descriptive, SEO-friendly alt text for an image described as follows:',
+    systemPrompt: 'Summarize this research paper into a compelling social media teaser that drives curiosity.',
     inputs: [
-      { id: 'image_desc', label: 'Image Description', type: 'textarea', placeholder: 'Describe the image visually...' }
+      { id: 'text', label: 'Research Text', type: 'textarea' }
+    ]
+  },
+
+  // --- MEDIA GENERATION ---
+  {
+    id: 'quote-card-architect',
+    name: 'Quote Card Architect',
+    role: 'Brand Designer',
+    description: 'Generates a 1:1 square image with the Gruve aesthetic (Agate/Emerald).',
+    category: 'Utility',
+    outputType: 'image',
+    memoryLog: [],
+    systemPrompt: '', // Handled via image model directly
+    inputs: [
+      { id: 'quote', label: 'Quote Text', type: 'textarea' },
+      { id: 'author', label: 'Author', type: 'text' }
     ]
   },
   {
-    id: 'emoji-fier',
-    name: 'Emojifier',
-    role: 'Utility',
-    description: 'Adds relevant emojis to text to increase visual engagement.',
+    id: 'advanced-image-agent',
+    name: 'Image Generator',
+    role: 'Artist',
+    description: 'Generates high-fidelity, modern tech-aesthetic images.',
+    category: 'Creation',
+    outputType: 'image',
+    memoryLog: [],
+    systemPrompt: '',
+    inputs: [
+      { id: 'prompt', label: 'Image Prompt', type: 'textarea' }
+    ]
+  },
+  {
+    id: 'image-prompt-engineer',
+    name: 'Prompt Engineer',
+    role: 'Translator',
+    description: 'Converts a visual concept into a technical Midjourney prompt.',
     category: 'Utility',
     outputType: 'text',
     memoryLog: [],
-    systemPrompt: 'Add relevant emojis to the text. Do not overdo it. Keep it professional but engaging.',
+    systemPrompt: 'Convert the user concept into a highly detailed, technical image generation prompt (lighting, camera, style).',
     inputs: [
-      { id: 'text', label: 'Plain Text', type: 'textarea' }
+      { id: 'concept', label: 'Visual Concept', type: 'textarea' }
+    ]
+  },
+  {
+    id: 'text-to-speech-agent',
+    name: 'Voice Generator',
+    role: 'Narrator',
+    description: 'Converts text scripts into high-quality audio.',
+    category: 'Creation',
+    outputType: 'audio',
+    memoryLog: [],
+    systemPrompt: '',
+    inputs: [
+      { id: 'script', label: 'Script', type: 'textarea' },
+      { id: 'voice', label: 'Voice (Male/Female)', type: 'select', options: ['Kore', 'Fenrir', 'Puck', 'Zephyr'] }
     ]
   }
 ];

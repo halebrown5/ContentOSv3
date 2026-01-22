@@ -55,25 +55,25 @@ export const CreateAgentModal: React.FC<CreateAgentModalProps> = ({ isOpen, onCl
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fade-in">
-      <div className="bg-[#0A0A0B] border border-[#27272A] rounded-2xl w-full max-w-lg shadow-[0_0_30px_rgba(0,255,102,0.1)]">
-        <div className="flex items-center justify-between p-4 border-b border-white/5">
-          <h2 className="text-white font-bold flex items-center gap-2">
-            <IconCpu className="text-[#00FF66] w-5 h-5" />
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/90 backdrop-blur-sm animate-fade-in">
+      <div className="bg-[#000000] border-2 border-[#00FF66] w-full max-w-lg shadow-[8px_8px_0px_0px_rgba(0,255,102,0.2)]">
+        <div className="flex items-center justify-between p-6 border-b-2 border-[#333333] bg-[#121212]">
+          <h2 className="text-white font-condensed font-black text-2xl uppercase flex items-center gap-3">
+            <IconCpu className="text-[#00FF66] w-6 h-6" />
             Create New Agent
           </h2>
           <button onClick={onClose} className="text-gray-500 hover:text-white transition-colors">
-            <IconX className="w-5 h-5" />
+            <IconX className="w-6 h-6" />
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="p-6 space-y-4">
-          <div className="grid grid-cols-2 gap-4">
+        <form onSubmit={handleSubmit} className="p-8 space-y-5 bg-[#000000]">
+          <div className="grid grid-cols-2 gap-5">
             <div>
-              <label className="block text-xs font-bold text-[#00FF66] mb-1">NAME</label>
+              <label className="block text-xs font-black text-[#00FF66] mb-2 uppercase tracking-widest">NAME</label>
               <input 
                 autoFocus
-                className="w-full bg-[#18181B] border border-white/10 rounded-lg p-2 text-sm text-white focus:outline-none focus:border-[#00FF66]"
+                className="w-full bg-[#121212] border-2 border-[#333333] p-3 text-sm text-white focus:outline-none focus:border-[#00FF66] font-bold"
                 placeholder="e.g. Email Rewriter"
                 value={formData.name}
                 onChange={e => setFormData({...formData, name: e.target.value})}
@@ -81,9 +81,9 @@ export const CreateAgentModal: React.FC<CreateAgentModalProps> = ({ isOpen, onCl
               />
             </div>
             <div>
-              <label className="block text-xs font-bold text-[#00FF66] mb-1">ROLE</label>
+              <label className="block text-xs font-black text-[#00FF66] mb-2 uppercase tracking-widest">ROLE</label>
               <input 
-                className="w-full bg-[#18181B] border border-white/10 rounded-lg p-2 text-sm text-white focus:outline-none focus:border-[#00FF66]"
+                className="w-full bg-[#121212] border-2 border-[#333333] p-3 text-sm text-white focus:outline-none focus:border-[#00FF66] font-bold"
                 placeholder="e.g. Editor"
                 value={formData.role}
                 onChange={e => setFormData({...formData, role: e.target.value})}
@@ -92,20 +92,20 @@ export const CreateAgentModal: React.FC<CreateAgentModalProps> = ({ isOpen, onCl
           </div>
 
           <div>
-            <label className="block text-xs font-bold text-[#00FF66] mb-1">DESCRIPTION</label>
+            <label className="block text-xs font-black text-[#00FF66] mb-2 uppercase tracking-widest">DESCRIPTION</label>
             <input 
-              className="w-full bg-[#18181B] border border-white/10 rounded-lg p-2 text-sm text-white focus:outline-none focus:border-[#00FF66]"
+              className="w-full bg-[#121212] border-2 border-[#333333] p-3 text-sm text-white focus:outline-none focus:border-[#00FF66] font-medium"
               placeholder="Short description of what this agent does..."
               value={formData.description}
               onChange={e => setFormData({...formData, description: e.target.value})}
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-2 gap-5">
              <div>
-              <label className="block text-xs font-bold text-[#00FF66] mb-1">CATEGORY</label>
+              <label className="block text-xs font-black text-[#00FF66] mb-2 uppercase tracking-widest">CATEGORY</label>
               <select 
-                className="w-full bg-[#18181B] border border-white/10 rounded-lg p-2 text-sm text-white focus:outline-none focus:border-[#00FF66]"
+                className="w-full bg-[#121212] border-2 border-[#333333] p-3 text-sm text-white focus:outline-none focus:border-[#00FF66] font-bold uppercase"
                 value={formData.category}
                 onChange={e => setFormData({...formData, category: e.target.value})}
               >
@@ -116,9 +116,9 @@ export const CreateAgentModal: React.FC<CreateAgentModalProps> = ({ isOpen, onCl
               </select>
             </div>
             <div>
-              <label className="block text-xs font-bold text-[#00FF66] mb-1">OUTPUT</label>
+              <label className="block text-xs font-black text-[#00FF66] mb-2 uppercase tracking-widest">OUTPUT</label>
               <select 
-                className="w-full bg-[#18181B] border border-white/10 rounded-lg p-2 text-sm text-white focus:outline-none focus:border-[#00FF66]"
+                className="w-full bg-[#121212] border-2 border-[#333333] p-3 text-sm text-white focus:outline-none focus:border-[#00FF66] font-bold uppercase"
                 value={formData.outputType}
                 onChange={e => setFormData({...formData, outputType: e.target.value})}
               >
@@ -129,30 +129,30 @@ export const CreateAgentModal: React.FC<CreateAgentModalProps> = ({ isOpen, onCl
           </div>
 
           <div>
-            <label className="block text-xs font-bold text-[#00FF66] mb-1">SYSTEM PROMPT</label>
+            <label className="block text-xs font-black text-[#00FF66] mb-2 uppercase tracking-widest">SYSTEM PROMPT</label>
             <textarea 
-              className="w-full bg-[#18181B] border border-white/10 rounded-lg p-2 text-sm text-white focus:outline-none focus:border-[#00FF66] font-mono h-32"
+              className="w-full bg-[#121212] border-2 border-[#333333] p-3 text-sm text-white focus:outline-none focus:border-[#00FF66] font-mono h-32"
               placeholder="You are an expert at..."
               value={formData.systemPrompt}
               onChange={e => setFormData({...formData, systemPrompt: e.target.value})}
               required
             />
-            <p className="text-[10px] text-gray-500 mt-1">
+            <p className="text-[10px] text-gray-500 mt-2 font-mono uppercase">
               Instructions that define how the agent behaves.
             </p>
           </div>
 
-          <div className="pt-4 flex justify-end gap-2">
+          <div className="pt-6 flex justify-end gap-3 border-t-2 border-[#333333]">
             <button 
               type="button" 
               onClick={onClose} 
-              className="px-4 py-2 rounded-lg text-sm text-gray-400 hover:text-white hover:bg-white/5 transition-colors"
+              className="px-6 py-3 border-2 border-transparent text-sm text-gray-400 hover:text-white font-bold uppercase transition-colors"
             >
               Cancel
             </button>
             <button 
               type="submit" 
-              className="px-4 py-2 bg-[#00FF66] text-black font-bold rounded-lg text-sm hover:bg-[#33ff85] transition-colors"
+              className="px-8 py-3 bg-[#00FF66] text-black font-condensed font-black text-lg uppercase hover:bg-white transition-colors border-2 border-black pump-shadow-white-sm"
             >
               Create Agent
             </button>

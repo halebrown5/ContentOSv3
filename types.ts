@@ -48,3 +48,27 @@ export interface AnalyticsData {
   trend: number; // percentage
   history: number[]; // simple array for sparklines
 }
+
+export interface DataLayerAnalysis {
+  insights: string[];
+  winning_formats: string[];
+  strategic_directive: string;
+  memory_summary: string;
+}
+
+export interface BrandContext {
+  name: string;
+  industry: string;
+  targetAudience: string;
+  toneVoice: string;
+}
+
+export interface HistoryItem {
+  id: string;
+  timestamp: number;
+  agentId: string;
+  agentName: string;
+  inputs: Record<string, string>;
+  output: string;
+  type: 'chat' | 'data_snapshot';
+}
